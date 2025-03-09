@@ -132,7 +132,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                 Text('UUID: ${widget.uuid}',
                     style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 10),
-                Text('Price: ${widget.price}',
+                Text('Price: Php. ${widget.price}',
                     style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 10),
                 Text('Quantity: ${widget.quantity}'),
