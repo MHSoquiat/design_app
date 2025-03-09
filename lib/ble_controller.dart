@@ -72,6 +72,8 @@ class BleController extends GetxController {
   bool isReading = false;
   RxMap<String, int> receivedUuids =
       <String, int>{}.obs; // Stores UUIDs and their count
+  RxMap<String, Map<String, dynamic>> productDetailsMap =
+      <String, Map<String, dynamic>>{}.obs;
 
   Future<void> enableNotifications(BluetoothDevice device) async {
     try {
@@ -106,6 +108,7 @@ class BleController extends GetxController {
                   print("New barcode received. Clearing previous data.");
                   currentActiveUuid.value = uuid;
                   receivedUuids.clear();
+                  productDetailsMap.clear();
                   // Optionally, if you want to clear any previous pages in the navigation stack,
                   // you can perform a navigation reset here (for example, using Get.offAll).
                 }
@@ -118,6 +121,7 @@ class BleController extends GetxController {
                 if (receivedUuids[uuid] == 1) {
                   final productData = await fetchProductDetails(uuid);
                   if (productData != null) {
+                    productDetailsMap[uuid] = productData;
                     // Navigate to ProductDetails page.
                     // You can also add any condition here to avoid multiple navigations if needed.
                     Get.to(() => ProductDetails(
