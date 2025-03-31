@@ -39,21 +39,7 @@ class _ProductDetailsState extends State<ProductDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.uuid),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart),
-            onPressed: () {
-              // Navigate to the UuidSummaryPage when the cart icon is pressed.
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UuidSummaryPage(),
-                ),
-              );
-            },
-          ),
-        ],
+        title: Text('${widget.uuid}'),
       ),
       body: Stack(
         children: [
@@ -71,7 +57,7 @@ class _ProductDetailsState extends State<ProductDetails> {
               ),
             ),
           ),
-          // Floating button to reopen BottomSheet if needed
+          // Floating button to reopen BottomSheet
           if (!isBottomSheetVisible)
             Positioned(
               bottom: 30,
@@ -132,13 +118,28 @@ class _ProductDetailsState extends State<ProductDetails> {
                 Text('UUID: ${widget.uuid}',
                     style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 10),
-                Text('Price: Php. ${widget.price}',
+                Text('Price: ${widget.price}',
                     style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 10),
                 Text('Quantity: ${widget.quantity}'),
-                const SizedBox(height: 10),
-                // Removed the "View Cart" button here.
-                const SizedBox(height: 10),
+                const SizedBox(
+                  height: 10,
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    // Navigate to summary page with UUID count
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UuidSummaryPage(),
+                      ),
+                    );
+                  },
+                  child: Text("View Summary"),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children:
