@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_authenticator/amplify_authenticator.dart';
@@ -58,6 +59,55 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (errorMessage.isNotEmpty) {
+      // Trigger the dialog only once
+      Future.delayed(Duration.zero, () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero,
+              ),
+              title: const Text(
+                'Invalid Account',
+                style: TextStyle(
+                    color: Color.fromRGBO(2, 0, 102, 1),
+                    fontWeight: FontWeight.bold),
+              ),
+              content: Text(errorMessage),
+              actions: <Widget>[
+                // Center and stretch the button
+                Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: double.infinity, // Make the button stretch
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.zero, // Remove border radius
+                        ),
+                        backgroundColor: const Color.fromRGBO(0, 153, 224, 1),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close the dialog
+                      },
+                      child: const Text(
+                        'Continue',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      });
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -81,8 +131,13 @@ class _SignInScreenState extends State<SignInScreen> {
             fillColor: Colors.white, // Light grey background
             hintText: "Enter your email",
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero, // Rounded corners
-            ),
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(
+                    color: Color.fromRGBO(2, 0, 102, 1)) // Rounded corners
+                ),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: Color.fromRGBO(2, 0, 102, 1))),
             contentPadding: EdgeInsets.symmetric(
               vertical: 14,
               horizontal: 16,
@@ -102,8 +157,13 @@ class _SignInScreenState extends State<SignInScreen> {
             fillColor: Colors.white,
             hintText: "Enter your password",
             border: const OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-            ),
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(
+                    color: Color.fromRGBO(2, 0, 102, 1)) // Rounded corners
+                ),
+            enabledBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: Color.fromRGBO(2, 0, 102, 1))),
             contentPadding: const EdgeInsets.symmetric(
               vertical: 14,
               horizontal: 16,
@@ -121,16 +181,7 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
           obscureText: true,
         ),
-
-        // Error Message
-        if (errorMessage.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Text(
-              errorMessage,
-              style: const TextStyle(color: Colors.red, fontSize: 14),
-            ),
-          ),
+// Error Message
 
         const SizedBox(height: 40),
         // Sign-In Button
@@ -145,7 +196,10 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
           child: isLoading
               ? const CircularProgressIndicator(color: Colors.white)
-              : const Text("Sign In"),
+              : const Text(
+                  "Log In",
+                  style: TextStyle(fontSize: 16),
+                ),
         ),
 
         const SizedBox(height: 16),
