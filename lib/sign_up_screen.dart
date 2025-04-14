@@ -12,6 +12,10 @@ class SignUpScreen extends StatefulWidget {
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
+class AuthDataHolder {
+  static String username = "";
+}
+
 class _SignUpScreenState extends State<SignUpScreen> {
   final nameController = TextEditingController();
   final emailController = TextEditingController();
@@ -21,7 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool isLoading = false;
 
   Future<void> _signUp() async {
-    final email = emailController.text.trim();
+    final String email = emailController.text.trim();
     final password = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
 
@@ -44,6 +48,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           CognitoUserAttributeKey.name: nameController.text.trim()
         }),
       );
+      AuthDataHolder.username = email;
       widget.state.changeStep(AuthenticatorStep.confirmSignUp);
     } on AuthException catch (e) {
       setState(() => errorMessage = e.message);

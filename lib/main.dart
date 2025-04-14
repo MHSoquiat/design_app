@@ -10,6 +10,7 @@ import 'package:design_app/sign_in_screen.dart';
 import 'package:design_app/reset_password_screen.dart';
 import 'package:design_app/confirm_reset_password.dart';
 import 'package:design_app/sign_up_screen.dart';
+import 'package:design_app/confirm_sign_up_screen.dart';
 
 Future<void> requestPermissions() async {
   await [
@@ -71,7 +72,7 @@ class _MyAppState extends State<MyApp> {
           case AuthenticatorStep.confirmSignUp:
             return CustomScaffold(
               state: state,
-              body: ConfirmSignUpForm(),
+              body: ConfirmSignUpScreen(state: state),
             );
           case AuthenticatorStep.resetPassword:
             return CustomScaffold(
