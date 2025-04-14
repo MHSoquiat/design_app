@@ -7,6 +7,9 @@ import 'package:amplify_authenticator/amplify_authenticator.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:design_app/amplifyconfiguration.dart';
 import 'package:design_app/sign_in_screen.dart';
+import 'package:design_app/reset_password_screen.dart';
+import 'package:design_app/confirm_reset_password.dart';
+import 'package:design_app/sign_up_screen.dart';
 
 Future<void> requestPermissions() async {
   await [
@@ -63,17 +66,7 @@ class _MyAppState extends State<MyApp> {
           case AuthenticatorStep.signUp:
             return CustomScaffold(
               state: state,
-              body: SignUpForm(),
-              footer: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Already have an account?"),
-                  TextButton(
-                    onPressed: () => state.changeStep(AuthenticatorStep.signIn),
-                    child: const Text("Sign In"),
-                  ),
-                ],
-              ),
+              body: SignUpScreen(state: state),
             );
           case AuthenticatorStep.confirmSignUp:
             return CustomScaffold(
@@ -83,12 +76,14 @@ class _MyAppState extends State<MyApp> {
           case AuthenticatorStep.resetPassword:
             return CustomScaffold(
               state: state,
-              body: ResetPasswordForm(),
+              body: ResetPasswordScreen(state: state),
             );
           case AuthenticatorStep.confirmResetPassword:
             return CustomScaffold(
               state: state,
-              body: const ConfirmResetPasswordForm(),
+              body: ConfirmResetPasswordScreen(
+                username: state.username,
+              ),
             );
           default:
             // Returning null defaults to the prebuilt Authenticator UI for any other steps.
@@ -158,16 +153,23 @@ class CustomScaffold extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: body,
+        child: LayoutBuilder(builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height - 40,
               ),
-            ],
-          ),
-        ),
+              child: Column(
+                children: [
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: body,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
       ),
       persistentFooterButtons: footer != null ? [footer!] : null,
     );
