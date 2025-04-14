@@ -1,18 +1,23 @@
 import 'package:design_app/home_page.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // Import GetX package
+import 'package:get/get.dart'; // GetX package for navigation
 import 'package:permission_handler/permission_handler.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_authenticator/amplify_authenticator.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:design_app/amplifyconfiguration.dart';
+import 'package:design_app/sign_in_screen.dart';
+import 'package:design_app/reset_password_screen.dart';
+import 'package:design_app/confirm_reset_password.dart';
+import 'package:design_app/sign_up_screen.dart';
+import 'package:design_app/confirm_sign_up_screen.dart';
 
 Future<void> requestPermissions() async {
   await [
     Permission.bluetooth,
     Permission.bluetoothScan,
     Permission.bluetoothConnect,
-    Permission.location
+    Permission.location,
   ].request();
 }
 
@@ -40,53 +45,134 @@ class _MyAppState extends State<MyApp> {
     try {
       final auth = AmplifyAuthCognito();
       await Amplify.addPlugin(auth);
-
-      // call Amplify.configure to use the initialized categories in your app
       await Amplify.configure(amplifyconfig);
+      safePrint('Successfully configured');
     } on Exception catch (e) {
-      safePrint('An error occurred configuring Amplify: $e');
+      safePrint('Error configuring Amplify: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Authenticator(
-        signUpForm: SignUpForm.custom(fields: [
-          SignUpFormField.name(required: true),
-          SignUpFormField.email(required: true),
-          SignUpFormField.password(),
-          SignUpFormField.passwordConfirmation()
-        ]),
-        child: GetMaterialApp(
-          builder: Authenticator.builder(),
-          // Use GetMaterialApp instead of MaterialApp
-          title: 'Design App',
-          debugShowCheckedModeBanner: false, // Optional: Removes debug banner
-          theme: ThemeData(
-            colorScheme:
-                ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
-            useMaterial3: true,
+      // Use the authenticatorBuilder to customize the UI for each authentication step.
+      authenticatorBuilder: (BuildContext context, AuthenticatorState state) {
+        switch (state.currentStep) {
+          case AuthenticatorStep.signIn:
+            return CustomScaffold(
+              state: state,
+              body: SignInScreen(state: state), // Use the custom sign-in screen
+            );
+
+          case AuthenticatorStep.signUp:
+            return CustomScaffold(
+              state: state,
+              body: SignUpScreen(state: state),
+            );
+          case AuthenticatorStep.confirmSignUp:
+            return CustomScaffold(
+              state: state,
+              body: ConfirmSignUpScreen(state: state),
+            );
+          case AuthenticatorStep.resetPassword:
+            return CustomScaffold(
+              state: state,
+              body: ResetPasswordScreen(state: state),
+            );
+          case AuthenticatorStep.confirmResetPassword:
+            return CustomScaffold(
+              state: state,
+              body: ConfirmResetPasswordScreen(
+                username: state.username,
+              ),
+            );
+          default:
+            // Returning null defaults to the prebuilt Authenticator UI for any other steps.
+            return null;
+        }
+      },
+      // The child below is wrapped by the Authenticator and will be shown when the user is authenticated.
+      child: GetMaterialApp(
+        navigatorKey: Get.key, // Ensures GetX navigation works.
+        builder: Authenticator
+            .builder(), // Provides default widget wrappers for Authenticator.
+        title: 'Design App',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData.from(
+          colorScheme: ColorScheme.fromSwatch(
+            primarySwatch: Colors.red,
+            backgroundColor: Colors.white,
           ),
-          home: const MyHomePage(),
-        ));
+        ).copyWith(
+          indicatorColor: const Color.fromRGBO(2, 0, 102, 1),
+        ),
+        themeMode: ThemeMode.system,
+        home: const MyHomePage(),
+      ),
+    );
   }
 }
 
+/// A widget that displays a title bar with a logo, a body, and an optional footer.
+class CustomScaffold extends StatelessWidget {
+  const CustomScaffold({
+    super.key,
+    required this.state,
+    required this.body,
+    this.footer,
+  });
 
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
+  final AuthenticatorState state;
+  final Widget body;
+  final Widget? footer;
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return GetMaterialApp(
-//       // Use GetMaterialApp instead of MaterialApp
-//       title: 'Design App',
-//       debugShowCheckedModeBanner: false, // Optional: Removes debug banner
-//       theme: ThemeData(
-//         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
-//         useMaterial3: true,
-//       ),
-//       home: const MyHomePage(),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        // Replace the title with your own logo image
+        title: Column(
+          children: [
+            Image.asset(
+              'assets/images/logo.png', // Ensure this path matches your asset
+              height: 40,
+            ),
+            const Text(
+              "BAZAAR",
+              style: TextStyle(
+                fontSize: 60,
+                fontWeight: FontWeight.bold,
+              ),
+            )
+          ],
+        ),
+        centerTitle: true,
+        backgroundColor: const Color.fromRGBO(2, 0, 102, 1),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        toolbarHeight: 210,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: LayoutBuilder(builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height - 40,
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: body,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ),
+      persistentFooterButtons: footer != null ? [footer!] : null,
+    );
+  }
+}
