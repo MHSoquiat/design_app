@@ -171,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         subtitle: Text(
                             data.device.id.id), // Still showing MAC address
-                        onTap: () => controller.connectDevices(data.device),
+                        onTap: () => controller.connectToDevice(data.device),
                       ),
                     );
                   },
