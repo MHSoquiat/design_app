@@ -2,6 +2,7 @@ import 'package:design_app/ble_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:get/get.dart';
+import 'package:design_app/connect_screen.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -18,12 +19,73 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('BLUETOOTH SCANNER'),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
+        appBar: AppBar(
+          title: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'ENSTACK BLUETOOTH',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'SCANNER',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          backgroundColor: const Color.fromRGBO(2, 0, 102, 1),
+          foregroundColor: Colors.white,
+          toolbarHeight: 161,
+          centerTitle: true,
+        ),
+        body: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: TextButton(
+              onPressed: isScanning
+                  ? null
+                  : () async {
+                      setState(() => isScanning = true);
+                      await controller.scanDevices();
+                      setState(() => isScanning = false);
+                    },
+              style: TextButton.styleFrom(
+                foregroundColor:
+                    const Color.fromRGBO(2, 0, 102, 1), // Text color
+                backgroundColor: Colors.transparent, // Transparent background
+                padding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              child: isScanning
+                  ? const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color.fromRGBO(2, 0, 102, 1),
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          'Scanning...',
+                          style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                              color: Color.fromRGBO(2, 0, 102, 1)),
+                        ),
+                      ],
+                    )
+                  : const Text(
+                      'Scan for Devices',
+                      style:
+                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    ),
+            ),
+          ),
           Expanded(
             child: StreamBuilder<List<ScanResult>>(
               stream: FlutterBlue.instance.scanResults,
@@ -33,7 +95,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No Devices Found'));
+                  return const Center(
+                      child: Text(
+                    'No Devices Found',
+                    style: TextStyle(
+                        color: Color.fromRGBO(2, 0, 66, 1), fontSize: 18),
+                  ));
                 }
 
                 // Filter devices with empty names and remove duplicates by name
@@ -54,14 +121,35 @@ class _MyHomePageState extends State<MyHomePage> {
                   itemBuilder: (context, index) {
                     final data = filteredDevices[index];
                     return Card(
+                      color: const Color.fromRGBO(0, 153, 224, 1),
                       margin: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 5),
                       elevation: 2,
                       child: ListTile(
-                        title: Text(data.device.name),
-                        subtitle: Text(
-                            data.device.id.id), // Still showing MAC address
-                        onTap: () => controller.connectDevices(data.device),
+                        title: Text(
+                          data.device.name,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        subtitle: Text(data.device.id.id),
+                        trailing: TextButton(
+                          onPressed: () async {
+                            await controller.connectDevices(data.device);
+                            Get.to(() => ConnectedScreen(device: data.device));
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            textStyle: const TextStyle(fontSize: 16),
+                          ),
+                          child: const Text(
+                            'Connect',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 25),
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -69,43 +157,6 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
           ),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: ElevatedButton(
-              onPressed: isScanning
-                  ? null
-                  : () async {
-                      setState(() => isScanning = true);
-                      await controller.scanDevices();
-                      setState(() => isScanning = false);
-                    },
-              style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                textStyle: const TextStyle(fontSize: 18),
-              ),
-              child: isScanning
-                  ? const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Text('Scanning...'),
-                      ],
-                    )
-                  : const Text('Scan for Devices'),
-            ),
-          ),
-        ],
-      ),
-    );
+        ]));
   }
 }
