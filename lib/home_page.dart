@@ -157,6 +157,27 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Get.offAllNamed('/'); // OR: Get.off(() => const LoginPage());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              icon: const Icon(Icons.logout, color: Colors.white),
+              label: const Text(
+                'Logout',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
         ]));
   }
 }

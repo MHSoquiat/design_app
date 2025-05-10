@@ -1,7 +1,7 @@
-import 'package:design_app/home_page.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // Import GetX package
+import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:design_app/login_page.dart'; // Add this import
 
 Future<void> requestPermissions() async {
   await [
@@ -24,14 +24,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      // Use GetMaterialApp instead of MaterialApp
       title: 'Design App',
-      debugShowCheckedModeBanner: false, // Optional: Removes debug banner
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: const LoginPage(), // Start with LoginPage
     );
   }
 }
