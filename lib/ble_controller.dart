@@ -47,6 +47,7 @@ class BleController extends GetxController {
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'uuid': uuid}),
       );
+      print(response.body);
 
       if (response.statusCode == 200) {
         return json.decode(response.body) as Map<String, dynamic>;
@@ -76,38 +77,43 @@ class BleController extends GetxController {
               '0000ffe1-0000-1000-8000-00805f9b34fb') {
             await characteristic.setNotifyValue(true);
 
+            RxString _uuidBuffer = ''.obs;
+
             characteristic.value.listen((value) async {
               if (value.isNotEmpty) {
-                String uuid = String.fromCharCodes(value).trim();
-                print("Received UUID: $uuid");
+                String chunk =
+                    String.fromCharCodes(value); // Convert bytes to string
+                print("Received BLE chunk: '$chunk'");
 
-                if (uuid.length != 12) {
-                  print(
-                      "Incomplete barcode received. Waiting for full data...");
-                  return;
-                }
+                _uuidBuffer.value += chunk;
 
-                // Always process the barcode — no more checking if it has been seen before
-                print("Processing barcode: $uuid");
-                currentActiveUuid.value = uuid;
+                // Check for full message using newline delimiter
+                if (_uuidBuffer.value.contains('\n')) {
+                  String fullUuid =
+                      _uuidBuffer.value.trim(); // Remove newline/whitespace
+                  _uuidBuffer.value = ''; // Reset buffer
 
-                receivedUuids.clear();
-                productDetailsMap.clear();
+                  print("Full encrypted UUID received: $fullUuid");
 
-                final productData = await fetchProductDetails(uuid);
-                if (productData != null) {
-                  productDetailsMap[uuid] = productData;
-                  receivedUuids[uuid] = 1;
+                  currentActiveUuid.value = fullUuid;
+                  receivedUuids.clear();
+                  productDetailsMap.clear();
 
-                  Get.to(() => ProductDetails(
-                        uuid: uuid,
-                        productName: productData['product_name'] ?? 'No Name',
-                        imageLink: productData['image_link'] ?? '',
-                        price: productData['price'] ?? '',
-                        rating: productData['rating'] ?? '',
-                        quantity: receivedUuids[uuid] ?? 1,
-                        device: device,
-                      ));
+                  final productData = await fetchProductDetails(fullUuid);
+                  if (productData != null) {
+                    productDetailsMap[fullUuid] = productData;
+                    receivedUuids[fullUuid] = 1;
+
+                    Get.to(() => ProductDetails(
+                          uuid: fullUuid,
+                          productName: productData['product_name'] ?? 'No Name',
+                          imageLink: productData['image_link'] ?? '',
+                          price: productData['price'] ?? '',
+                          rating: productData['rating'] ?? '',
+                          quantity: receivedUuids[fullUuid] ?? 1,
+                          device: device,
+                        ));
+                  }
                 }
               }
             });
@@ -118,6 +124,58 @@ class BleController extends GetxController {
       print("Error enabling notifications: $e");
     }
   }
+
+  // Future<void> enableNotifications(BluetoothDevice device) async {
+  //   try {
+  //     List<BluetoothService> services = await device.discoverServices();
+  //     for (var service in services) {
+  //       for (var characteristic in service.characteristics) {
+  //         if (characteristic.uuid.toString() ==
+  //             '0000ffe1-0000-1000-8000-00805f9b34fb') {
+  //           await characteristic.setNotifyValue(true);
+
+  //           characteristic.value.listen((value) async {
+  //             if (value.isNotEmpty) {
+  //               String uuid = String.fromCharCodes(value).trim();
+  //               print("Received UUID: $uuid");
+
+  //               if (uuid.length != 12) {
+  //                 print(
+  //                     "Incomplete barcode received. Waiting for full data...");
+  //                 return;
+  //               }
+
+  //               // Always process the barcode — no more checking if it has been seen before
+  //               print("Processing barcode: $uuid");
+  //               currentActiveUuid.value = uuid;
+
+  //               receivedUuids.clear();
+  //               productDetailsMap.clear();
+
+  //               final productData = await fetchProductDetails(uuid);
+  //               if (productData != null) {
+  //                 productDetailsMap[uuid] = productData;
+  //                 receivedUuids[uuid] = 1;
+
+  //                 Get.to(() => ProductDetails(
+  //                       uuid: uuid,
+  //                       productName: productData['product_name'] ?? 'No Name',
+  //                       imageLink: productData['image_link'] ?? '',
+  //                       price: productData['price'] ?? '',
+  //                       rating: productData['rating'] ?? '',
+  //                       quantity: receivedUuids[uuid] ?? 1,
+  //                       device: device,
+  //                     ));
+  //               }
+  //             }
+  //           });
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Error enabling notifications: $e");
+  //   }
+  // }
 
   // Future<void> enableNotifications(BluetoothDevice device) async {
   //   try {
