@@ -4,6 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:design_app/prod_deets.dart';
+import 'package:design_app/login_page.dart';
 
 class BleController extends GetxController {
   RxString currentActiveUuid = ''.obs;
@@ -39,15 +40,53 @@ class BleController extends GetxController {
     }
   }
 
+  // Future<Map<String, dynamic>?> fetchProductDetails(String uuid) async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse(
+  //           "https://hkpmxfz4wyvhz2jtxx4ayk7z3m0tdjaz.lambda-url.us-east-1.on.aws/"),
+  //       headers: {'Content-Type': 'application/json'},
+  //       body: json.encode({'uuid': uuid}),
+  //     );
+  //     print(response.body);
+
+  //     if (response.statusCode == 200) {
+  //       return json.decode(response.body) as Map<String, dynamic>;
+  //     } else {
+  //       Get.snackbar("Error", "Failed to fetch product details.");
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     Get.snackbar("Network Error", "Please check your internet connection.");
+  //     return null;
+  //   }
+  // }
+
   Future<Map<String, dynamic>?> fetchProductDetails(String uuid) async {
     try {
+      // Assumes you stored key with GetStorage
+      final storedKey = globalBazaarKey;
+
+      if (storedKey == null || storedKey.isEmpty) {
+        Get.snackbar("Error", "User key not found. Please log in again.");
+        return null;
+      }
+
+      final requestBody = {
+        'uuid': uuid,
+        'key': storedKey,
+      };
+
+      print("Sending payload: $requestBody"); // 🔍 Debug print
+
       final response = await http.post(
         Uri.parse(
             "https://hkpmxfz4wyvhz2jtxx4ayk7z3m0tdjaz.lambda-url.us-east-1.on.aws/"),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'uuid': uuid}),
+        body: json.encode(requestBody),
       );
-      print(response.body);
+
+      print("API response: ${response.body}");
 
       if (response.statusCode == 200) {
         return json.decode(response.body) as Map<String, dynamic>;
